@@ -14,24 +14,37 @@
 
    ```javascript
    var gulp = require('gulp');
-   var gulpState = require('./gulp-angular-state');
+   var statePlugin = require('./gulp-angular-state');
    var watch = require('gulp-watch');
 
-   gulp.task('angularState', function () {
-   	gulp.src('./module/**/*.js')
-   		.pipe(gulpState('./env/Aconfig.js'))
-   		.pipe(gulp.dest('./'));
+   var SRC = './src';
+
+   /**
+    * 初始化controller到路由文件
+    */
+   gulp.task('init:controller', function () {
+   	return gulp.src('./src/module/**/*.controller.js', {base: SRC})
+   			.pipe(statePlugin.controller('./env/RouterConfig.js'))
+   			.pipe(gulp.dest(SRC));
+   });
+   /**
+    * 初始化service和directive添加到ModuleConfig
+    */
+   gulp.task('init:module', function() {
+   	return gulp.src(['./src/module/**/*.service.js', './src/directive/**/*.directive.js'], {base: SRC})
+   			.pipe(statePlugin.module('./env/ModuleConfig.js'))
+   			.pipe(gulp.dest(SRC));
    });
 
-   gulp.task('default', ['angularState']);
+   gulp.task('default', ['init:controller', 'init:module']);
    ```
 
-3. 编写路由模板文件(`./env/Aconfig.js`)
+3. 编写路由模板文件(`./env/RouterConfig.js`)
 
    ```javascript
    (function () {
    	'use strict';
-   	var app = angular.module('Aconfig', ['ui.router', 'oc.lazyLoad']);	
+   	var app = angular.module('RouterConfig', ['ui.router', 'oc.lazyLoad']);	
 
    	app.config(['$stateProvider', function ($stateProvider) {
    		
@@ -59,15 +72,16 @@
    ```javascript
    (function () {
    	'use strict';
-   	var app = angular.module('MainCtrlModule', []);
+   	var app = angular.module('Main.controller', [['Second.service']]);
    	/**
    	 * 一级页面主controller
    	 * @At('main', '/main')
    	 * @Template("./index.html")
    	 * @Style('./index.css')
    	 */
-   	app.controller('TemplateHeaderFooterCtrl', ['$scope', '$rootScope', function ($scope, $rootScope) {
+   	app.controller('MainCtrl', ['$scope', '$rootScope', 'sayHiService', function ($scope, $rootScope, sayHiService) {
    		console.log('一级页面主controller');
+   		sayHiService();
    	}]);
 
    	/**
@@ -108,7 +122,7 @@
    			.state('main', {
    				url: '/main',
    				templateUrl: '/module/main/index.html',
-   				controller: 'TemplateHeaderFooterCtrl',
+   				controller: 'MainCtrl',
    				resolve: {
    					load: ['$ocLazyLoad', function ($ocLazyLoad) {
    						return $ocLazyLoad.load(['/module/main/MainCtrl.js','/module/main/index.css']);
@@ -133,7 +147,85 @@
    })();
    ```
 
+## Service 和Directive
+
+> Service 还算好，Directive要包含模板，感觉不是很好
+
+1. 编写模块别名文件(`./env/ModuleConfig.js`)
+
+   ```javascript
+   (function () {
+   	'use strict';
+   	var app = angular.module('ModuleConfig', ['oc.lazyLoad']);
+
+   	app.config(['$ocLazyLoadProvider', function ($ocLazyLoadProvider) {
+   		var modules = [];
+   		/**
+   		 * inject:service
+   		 modules[modules.length] = {name: '<%= module.name %>', files: ['<%= module.path %>']};
+   		 */
+   		/** endInject */
+   		
+   		// 模块定义别名
+   		$ocLazyLoadProvider.config({
+   			modules: modules,
+   			debug: false,
+   		});
+   	}]);
+   })();
+   ```
+
+2. 新建`Second.service.js`文件
+
+   ```javascript
+   (function() {
+   	"use strict";
+   	var app = angular.module('Second.service', []);
+   	// 
+   	app.factory('sayHiService', ['$q', function($q) { 
+   		return function(scriptSrc) {
+   			console.log('Hello service');
+   		};
+   	}]);
+   })();
+   ```
+
+   ​
+
+3. 结果
+
+   ```javascript
+   (function () {
+   	'use strict';
+   	var app = angular.module('ModuleConfig', ['oc.lazyLoad']);
+
+   	app.config(['$ocLazyLoadProvider', function ($ocLazyLoadProvider) {
+   		var modules = [];
+   		/**
+   		 * inject:service
+   		 modules[modules.length] = {name: '<%= module.name %>', files: ['<%= module.path %>']};
+   		 */
+   		 
+   		 modules[modules.length] = {name: 'Second.service', files: ['/module/main/Second.service.js']};
+   		 
+   		 /** endInject */
+   		
+   		// 模块定义别名
+   		$ocLazyLoadProvider.config({
+   			modules: modules,
+   			debug: false,
+   		});
+   	}]);
+   })();
+   ```
+
+   ​
+
 ## API
+
+### statePlugin.controller('路由模板文件')
+
+> 读取就是中的@At、@Template、@Style等信息添加到模板文件；
 
 **@At(stateName, url)**
 
@@ -151,7 +243,7 @@ url: 参考ui-router url
 
 **state对象**
 
-```json
+```javascript
 {
   name: '',
   url: '',
@@ -161,9 +253,16 @@ url: 参考ui-router url
 }
 ```
 
+### statePlugin.module('模块别名模板文件')
 
+> 创建Service和Directive时会自动添加到别名文件中
 
+**module对象**
 
-
-
+```javascript
+{
+  name: '',
+  path: ''
+}
+```
 
