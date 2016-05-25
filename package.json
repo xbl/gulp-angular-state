@@ -12,5 +12,9 @@
     "state"
   ],
   "author": "xbl",
-  "license": "MIT"
+  "license": "MIT",
+  "devDependencies": {
+    "gulp-util": "^3.0.7",
+    "through2": "^2.0.1"
+  }
 }
