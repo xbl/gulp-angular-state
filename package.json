@@ -1,19 +1,24 @@
 {
   "name": "gulp-angular-state",
-  "version": "1.0.1",
+  "version": "1.0.3",
   "description": "方便配置angularjs 1.x的路由，让开发者只关心controller",
   "main": "index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
   },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/xbl/gulp-angular-state"
+  },
+  "homepage": "https://github.com/xbl/gulp-angular-state",
   "keywords": [
     "angularjs",
     "controller",
     "state"
   ],
-  "author": "xbl",
+  "author": "xbl<x_bl@sina.com>",
   "license": "MIT",
-  "devDependencies": {
+  "dependencies": {
     "gulp-util": "^3.0.7",
     "through2": "^2.0.1"
   }
