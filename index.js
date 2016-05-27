@@ -42,7 +42,7 @@ plugins.controller = function (injectFile, options) {
 		}
 		// 确保文件进去下一个插件
 		// this.push(file);
-		var filepath = '/' + file.relative;
+		var filepath = '/' + file.relative.replace(/\\/g, '/');
 		if (file.isBuffer()) {
 			var arr = readJsFile(file.contents.toString(), filepath, options);
 			if(!arr.length) {
@@ -100,7 +100,7 @@ plugins.module = function (injectFile, options) {
 			return cb();
 		}
 
-		var filepath = '/' + file.relative;
+		var filepath = '/' + file.relative.replace(/\\/g, '/');
 		if (file.isBuffer()) {
 			var moduleObj = {
 				name: path.basename(filepath, '.js'),

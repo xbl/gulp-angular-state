@@ -35,7 +35,8 @@ module.exports = function(data, filepath, options) {
 				dir: path.dirname(filepath),
 				base: str
 			});
-			stateObj['template'] = options.domain + path.normalize(temp);
+			temp = path.normalize(temp).replace(/\\/g, '/');
+			stateObj['template'] = options.domain + temp;
 		});
 		// 匹配@Style
 		match.replace(/\@Style\(([^*]*?)\)/ig, function(tempalte, str) {
@@ -45,8 +46,9 @@ module.exports = function(data, filepath, options) {
 				dir: path.dirname(filepath),
 				base: str
 			});
-			stateObj['style'] = path.normalize(temp);
-			loadFileArr.push(options.domain + path.normalize(temp));
+			temp = path.normalize(temp).replace(/\\/g, '/');
+			stateObj['style'] = temp;
+			loadFileArr.push(options.domain + temp);
 		});
 		
 		// 匹配ctrlName
