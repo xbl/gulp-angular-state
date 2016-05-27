@@ -7,7 +7,7 @@
 1. 下载插件
 
    ```shell
-   npm install --save gulp-angular-state
+   npm install --save-dev gulp-angular-state
    ```
 
 2. 编写`gulpfile.js`
@@ -266,3 +266,6 @@ url: 参考ui-router url
 }
 ```
 
+### Demo
+
+[source](https://github.com/xbl/gulp-angular-state-demo)
