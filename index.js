@@ -34,7 +34,7 @@ plugins.controller = function (injectFile, options) {
 	var injectStr = '';
 	
 	// 创建一个让每个文件通过的 stream 通道
-	return through.obj(function(file, encoding, cb) {
+	return through.obj(function (file, encoding, cb) {
 		// 关于file的文档：https://github.com/gulpjs/vinyl
 		if (file.isStream()) {
 			this.emit('error', new PluginError(PLUGIN_NAME, 'Stream not supported!'));
@@ -48,8 +48,7 @@ plugins.controller = function (injectFile, options) {
 			if(!arr.length) {
 				return cb();
 			}
-			
-			arr.forEach(function(stateObj, i) {
+			arr.forEach(function (stateObj, i) {
 				// 这里有一个bug，不设置file会报错...
 				injectStr += gutil.template(stateTemplate, { state: stateObj, file: '' });
 			});
@@ -93,7 +92,7 @@ plugins.module = function (injectFile, options) {
 	var injectStr = '';
 	
 	// 创建一个让每个文件通过的 stream 通道
-	return through.obj(function(file, encoding, cb) {
+	return through.obj(function (file, encoding, cb) {
 		// 关于file的文档：https://github.com/gulpjs/vinyl
 		if (file.isStream()) {
 			this.emit('error', new PluginError(PLUGIN_NAME, 'Stream not supported!'));
@@ -120,7 +119,6 @@ plugins.module = function (injectFile, options) {
 		}
 	});
 };
-
 
 // 暴露（export）插件的主函数
 module.exports = plugins;
