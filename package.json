@@ -1,6 +1,6 @@
 {
   "name": "gulp-angular-state",
-  "version": "1.0.4",
+  "version": "1.0.5",
   "description": "方便配置angularjs 1.x的路由，让开发者只关心controller",
   "main": "index.js",
   "scripts": {

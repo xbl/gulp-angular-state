@@ -4,97 +4,98 @@
 
 ## Quick start
 
-1. 下载插件
+1.   下载插件
 
-   ```shell
-   npm install --save-dev gulp-angular-state
-   ```
+     ```shell
+     npm install --save-dev gulp-angular-state
+     ```
 
-2. 编写`gulpfile.js`
+2.   编写`gulpfile.js`
 
-   ```javascript
-   var gulp = require('gulp');
-   var statePlugin = require('./gulp-angular-state');
-   var watch = require('gulp-watch');
+     ```javascript
+     var gulp = require('gulp');
+     var statePlugin = require('./gulp-angular-state');
+     var watch = require('gulp-watch');
 
-   var SRC = './src';
+     var SRC = './src';
 
-   /**
-    * 初始化controller到路由文件
-    */
-   gulp.task('init:controller', function () {
-   	return gulp.src('./src/module/**/*.controller.js', {base: SRC})
-   			.pipe(statePlugin.controller('./env/RouterConfig.js'))
-   			.pipe(gulp.dest(SRC));
-   });
-   /**
-    * 初始化service和directive添加到ModuleConfig
-    */
-   gulp.task('init:module', function() {
-   	return gulp.src(['./src/module/**/*.service.js', './src/directive/**/*.directive.js'], {base: SRC})
-   			.pipe(statePlugin.module('./env/ModuleConfig.js'))
-   			.pipe(gulp.dest(SRC));
-   });
+     /**
+      * 初始化controller到路由文件
+      */
+     gulp.task('init:controller', function () {
+     	return gulp.src('./src/module/**/*.controller.js', {base: SRC})
+     		.pipe(statePlugin.controller('./env/RouterConfig.js'))
+     		.pipe(gulp.dest(SRC));
+     });
+     /**
+      * 初始化service和directive添加到ModuleConfig
+      */
+     gulp.task('init:module', function() {
+     	return gulp.src(['./src/module/**/*.service.js', './src/directive/**/*.directive.js'], {base: SRC})
+     		.pipe(statePlugin.module('./env/ModuleConfig.js'))
+     		.pipe(gulp.dest(SRC));
+     });
+     gulp.task('default', ['init:controller', 'init:module']);
+     ```
 
-   gulp.task('default', ['init:controller', 'init:module']);
-   ```
+3.   编写路由模板文件(`./env/RouterConfig.js`)
 
-3. 编写路由模板文件(`./env/RouterConfig.js`)
+     ```javascript
+     (function () {
+       'use strict';
+       var app = angular.module('RouterConfig', ['ui.router', 'oc.lazyLoad']);	
 
-   ```javascript
-   (function () {
-   	'use strict';
-   	var app = angular.module('RouterConfig', ['ui.router', 'oc.lazyLoad']);	
+       app.config(['$stateProvider', function ($stateProvider) {
+     	/** inject:controller
+     	// <%= state.description %>
+     	$stateProvider
+     		.state('<%= state.name %>', {
+     			url: '<%= state.url %>',
+           		templateUrl: '<%= state.template %>',
+           		controller: '<%= state.ctrlName %>',
+           		resolve: {
+           		load: ['$ocLazyLoad', function ($ocLazyLoad) {
+           			return $ocLazyLoad.load(['<%= state.loadFileArr.join("', '") %>']);
+           		}],
+     			<%= state.custom %>	
+           	}
+     	});
+         */
+     	/** endInject */
+       }]);
+     })();
+     ```
 
-   	app.config(['$stateProvider', function ($stateProvider) {
-   		
-   		/** inject:controller
-   		// <%= state.description %>
-   		$stateProvider
-   			.state('<%= state.name %>', {
-   				url: '<%= state.url %>',
-   				templateUrl: '<%= state.template %>',
-   				controller: '<%= state.ctrlName %>',
-   				resolve: {
-   					load: ['$ocLazyLoad', function ($ocLazyLoad) {
-   						return $ocLazyLoad.load(['<%= state.loadFileArr.join("','") %>']);
-   					}]
-   				}
-   			});
-   		 */
-   		 /** endInject */
-   	}]);
-   })();
-   ```
+4.   添加controller
 
-4. 添加controller
+     ```javascript
+     (function () {
+     	'use strict';
+     	var app = angular.module('Main.controller', [['Second.service']]);
+     	/**
+     	 * 一级页面主controller
+     	 * @At('main', '/main')
+     	 * @Template("./index.html")
+     	 * @Style('./index.css')
+     	 * @Custom({role: [{ status: 1, toState: 'second.myLogin' }] })
+     	 */
+     	app.controller('MainCtrl', ['$scope', 'sayHiService', function ($scope, sayHiService) {
+     		console.log('一级页面主controller');
+     		sayHiService();
+     	}]);
 
-   ```javascript
-   (function () {
-   	'use strict';
-   	var app = angular.module('Main.controller', [['Second.service']]);
-   	/**
-   	 * 一级页面主controller
-   	 * @At('main', '/main')
-   	 * @Template("./index.html")
-   	 * @Style('./index.css')
-   	 */
-   	app.controller('MainCtrl', ['$scope', '$rootScope', 'sayHiService', function ($scope, $rootScope, sayHiService) {
-   		console.log('一级页面主controller');
-   		sayHiService();
-   	}]);
+     	/**
+     	 * Login controller
+     	 * @At('login', '/login')
+     	 * @Template("./login.html")
+     	 * @Style("./login.css");
+     	 */
+     	app.controller('LoginCtrl', ['$scope', '$rootScope', function ($scope, $rootScope) { }]);
+     })();
+     ```
 
-   	/**
-   	 * Login controller
-   	 * @At('login', '/login')
-   	 * @Template("./login.html")
-   	 * @Style("./login.css");
-   	 */
-   	app.controller('LoginCtrl', ['$scope', '$rootScope', function ($scope, $rootScope) { }]);
-   })();
-   ```
 
-5. 结果
+1. 结果
 
    ```javascript
    (function () {
@@ -112,9 +113,10 @@
    				controller: '<%= state.ctrlName %>',
    				resolve: {
    					load: ['$ocLazyLoad', function ($ocLazyLoad) {
-   						return $ocLazyLoad.load(['<%= state.loadFileArr.join("','") %>']);
+   						return $ocLazyLoad.load(['<%= state.loadFileArr.join("', '") %>']);
    					}]
-   				}
+   				},
+   				<%= state.custom %>	
    			});
    		 */
    		// 一级页面主controller
@@ -127,7 +129,8 @@
    					load: ['$ocLazyLoad', function ($ocLazyLoad) {
    						return $ocLazyLoad.load(['/module/main/MainCtrl.js','/module/main/index.css']);
    					}]
-   				}
+   				},
+   				role: [{ status: 1, toState: 'second.myLogin' }]
    			});
    		 
    		// Login controller
@@ -140,7 +143,7 @@
    					load: ['$ocLazyLoad', function ($ocLazyLoad) {
    						return $ocLazyLoad.load(['/module/main/MainCtrl.js','/module/main/login.css']);
    					}]
-   				}
+   				},
    			});
    		 /** endInject */
    	}]);
@@ -151,73 +154,71 @@
 
 > Service 还算好，Directive要包含模板，感觉不是很好
 
-1. 编写模块别名文件(`./env/ModuleConfig.js`)
+1.    编写模块别名文件(`./env/ModuleConfig.js`)
 
-   ```javascript
-   (function () {
-   	'use strict';
-   	var app = angular.module('ModuleConfig', ['oc.lazyLoad']);
+      ```javascript
+      (function () {
+      	'use strict';
+      	var app = angular.module('ModuleConfig', ['oc.lazyLoad']);
 
-   	app.config(['$ocLazyLoadProvider', function ($ocLazyLoadProvider) {
-   		var modules = [];
-   		/**
-   		 * inject:service
-   		 modules[modules.length] = {name: '<%= module.name %>', files: ['<%= module.path %>']};
-   		 */
-   		/** endInject */
-   		
-   		// 模块定义别名
-   		$ocLazyLoadProvider.config({
-   			modules: modules,
-   			debug: false,
-   		});
-   	}]);
-   })();
-   ```
+      	app.config(['$ocLazyLoadProvider', function ($ocLazyLoadProvider) {
+      		var modules = [];
+      		/**
+      * inject:service
+      		 modules[modules.length] = {name: '<%= module.name %>', files: ['<%= module.path %>']};
+      		 */
+      		/** endInject */
+      		
+      		// 模块定义别名
+      		$ocLazyLoadProvider.config({
+      			modules: modules,
+      			debug: false,
+      		});
+      	}]);
+      })();
+      ```
 
-2. 新建`Second.service.js`文件
+2.    新建`Second.service.js`文件
 
-   ```javascript
-   (function() {
-   	"use strict";
-   	var app = angular.module('Second.service', []);
-   	// 
-   	app.factory('sayHiService', ['$q', function($q) { 
-   		return function(scriptSrc) {
-   			console.log('Hello service');
-   		};
-   	}]);
-   })();
-   ```
+      ```javascript
+      (function() {
+         	"use strict";
+         	var app = angular.module('Second.service', []);
+         	// 
+         	app.factory('sayHiService', ['$q', function($q) { 
+         		return function(scriptSrc) {
+         			console.log('Hello service');
+         		};
+         	}]);
+      })();
+      ```
 
-   ​
+         ​
 
-3. 结果
+3.    结果
 
-   ```javascript
-   (function () {
-   	'use strict';
-   	var app = angular.module('ModuleConfig', ['oc.lazyLoad']);
+      ```javascript
+      (function () {
+          'use strict';
+          var app = angular.module('ModuleConfig', ['oc.lazyLoad']);
 
-   	app.config(['$ocLazyLoadProvider', function ($ocLazyLoadProvider) {
-   		var modules = [];
-   		/**
-   		 * inject:service
-   		 modules[modules.length] = {name: '<%= module.name %>', files: ['<%= module.path %>']};
-   		 */
-   		 
-   		 modules[modules.length] = {name: 'Second.service', files: ['/module/main/Second.service.js']};
-   		 
-   		 /** endInject */
-   		
-   		// 模块定义别名
-   		$ocLazyLoadProvider.config({
-   			modules: modules,
-   			debug: false,
-   		});
-   	}]);
-   })();
-   ```
+          app.config(['$ocLazyLoadProvider', function ($ocLazyLoadProvider) {
+            	var modules = [];
+            	/**
+      * inject:service
+      		 modules[modules.length] = {name: '<%= module.name %>', files: ['<%= module.path %>']};
+      		 */
+      		modules[modules.length] = {name: 'Second.service', files: ['/module/main/Second.service.js']};
+      		/** endInject */
+      		
+      		// 模块定义别名
+      		$ocLazyLoadProvider.config({
+      			modules: modules,
+      			debug: false,
+      		});
+      	}]);
+      })();
+      ```
 
    ​
 
@@ -225,21 +226,31 @@
 
 ### statePlugin.controller('路由模板文件')
 
-> 读取就是中的@At、@Template、@Style等信息添加到模板文件；
+> 读取就是中的@At、@Template、@Style、@Custom等信息添加到模板文件；
 
 **@At(stateName, url)**
 
-stateName: 参考ui-router state name
+> stateName: 参考[ui-router controllers](https://github.com/angular-ui/ui-router/wiki#controllers)
+>
+> url: 参考ui-router url
 
-url: 参考ui-router url
+
 
 **@Template(templatePath)**
 
-模板的路径
+> 模板的路径，controller文件相对路径
+
+
 
 **@Style(cssPath)**
 
-样式文件路径
+> 样式文件路径，controller文件相对路径
+
+
+
+**@Custom(自定义属性)**
+
+> 自定义属性，如：`@Custom({role: [{ status: 1, toState: 'second.myLogin' }] })`
 
 **state对象**
 
@@ -249,6 +260,7 @@ url: 参考ui-router url
   url: '',
   template: '',
   ctrlName: '',
+  custom: {},
   loadFileArr: ['ctrl js file path', 'css file path']
 }
 ```
